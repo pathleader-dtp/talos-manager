@@ -21,7 +21,12 @@ Bundler.require(*Rails.groups)
 module DevopsTalosManager
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
+    config.load_defaults 7.1
+
+    # Please, add to the `ignore` list any other `lib` subdirectories that do
+    # not contain `.rb` files, or that should not be reloaded or eager loaded.
+    # Common ones are `templates`, `generators`, or `middleware`, for example.
+    config.autoload_lib(ignore: %w[assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -43,6 +48,8 @@ module DevopsTalosManager
     config.active_record.encryption.primary_key = ENV["AR_ENCRYPTION_PRIMARY_KEY"]
     config.active_record.encryption.deterministic_key = ENV["AR_ENCRYPTION_DETERMINISTIC_KEY"]
     config.active_record.encryption.key_derivation_salt = ENV["AR_ENCRYPTION_KEY_DERIVATION_SALT"]
-    config.active_record.encryption.support_unencrypted_data = true # TODO: remove this once we've migrated all data
+
+    # TODO: Remove after running Cluster.find_each(&:encrypt)
+    config.active_record.encryption.support_sha1_for_non_deterministic_encryption = true
   end
 end

@@ -5,45 +5,10 @@ class ConfigsController < ApplicationController
     @configs = Config.all
   end
 
-  def new
-    @config = Config.new(
-      kubernetes_version: "1.29.2",
-      install_image: "ghcr.io/siderolabs/installer:v1.6.7",
-      kubespan: true,
-    )
-  end
-
-  def create
-    @config = Config.new(config_params)
-
-    if @config.save
-      redirect_to configs_path, notice: "Config #{@config.name} successfully created!"
-    else
-      render :new, status: 422
-    end
-  end
-
-  def edit
-    @config = Config.find(params[:id])
-  end
-
-  def update
-    @config = Config.find(params[:id])
-
-    if @config.update(config_params)
-      redirect_to configs_path, notice: "Config #{@config.name} successfully updated!"
-    else
-      render :edit, status: 422
-    end
-  end
-
   def show
-    uuid = params[:uuid]
     ip = request.remote_ip
 
     server = Server.find_by_ip!(ip)
-
-    server.update!(uuid: uuid) if uuid != server.uuid
 
     if server.machine_config
       # Using 1.second.ago seems silly but is required to show the correct status in the UI at the moment
@@ -56,7 +21,39 @@ class ConfigsController < ApplicationController
       sleep 15
 
       attempt = params[:attempt] || 0
-      redirect_to get_config_path(uuid: params[:uuid], attempt: attempt.to_i + 1)
+      redirect_to get_config_path(attempt: attempt.to_i + 1)
+    end
+  end
+
+  def new
+    @config = Config.new(
+      kubernetes_version: "1.29.2",
+      install_image: "ghcr.io/siderolabs/installer:v1.6.6",
+      kubespan: true,
+    )
+  end
+
+  def edit
+    @config = Config.find(params[:id])
+  end
+
+  def create
+    @config = Config.new(config_params)
+
+    if @config.save
+      redirect_to configs_path, notice: "Config #{@config.name} successfully created!"
+    else
+      render :new, status: 422
+    end
+  end
+
+  def update
+    @config = Config.find(params[:id])
+
+    if @config.update(config_params)
+      redirect_to configs_path, notice: "Config #{@config.name} successfully updated!"
+    else
+      render :edit, status: 422
     end
   end
 
